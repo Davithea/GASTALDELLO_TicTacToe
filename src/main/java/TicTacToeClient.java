@@ -7,29 +7,22 @@ import java.net.*;
 public class TicTacToeClient {
     int boardWidth = 600;
     int boardHeight = 700;
-
     JFrame frame = new JFrame("Tic-Tac-Toe Multiplayer");
     JLabel textLabel = new JLabel();
     JPanel textPanel = new JPanel();
     JPanel boardPanel = new JPanel();
     JPanel lobbyPanel = new JPanel();
-
     JList<String> playerList;
     DefaultListModel<String> playerListModel;
     JButton challengeButton;
     JButton refreshButton;
-
     JButton[][] board = new JButton[3][3];
-    String playerX = "X";
-    String playerO = "O";
     String myPlayer;
     String myNickname;
     String opponentNickname;
-
     boolean gameOver = false;
     boolean myTurn = false;
     boolean inGame = false;
-
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
@@ -59,23 +52,17 @@ public class TicTacToeClient {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-
         textLabel.setBackground(Color.darkGray);
         textLabel.setForeground(Color.white);
         textLabel.setFont(new Font("Arial", Font.BOLD, 30));
         textLabel.setHorizontalAlignment(JLabel.CENTER);
         textLabel.setText("Connessione al server...");
         textLabel.setOpaque(true);
-
         textPanel.setLayout(new BorderLayout());
         textPanel.add(textLabel);
         frame.add(textPanel, BorderLayout.NORTH);
-
-        // Setup lobby panel
         setupLobbyPanel();
         frame.add(lobbyPanel, BorderLayout.CENTER);
-
-        // Setup board panel (nascosto inizialmente)
         setupBoardPanel();
         boardPanel.setVisible(false);
     }
@@ -83,34 +70,27 @@ public class TicTacToeClient {
     void setupLobbyPanel() {
         lobbyPanel.setLayout(new BorderLayout());
         lobbyPanel.setBackground(Color.darkGray);
-
         JLabel lobbyLabel = new JLabel("Giocatori Connessi");
         lobbyLabel.setForeground(Color.white);
         lobbyLabel.setFont(new Font("Arial", Font.BOLD, 20));
         lobbyLabel.setHorizontalAlignment(JLabel.CENTER);
         lobbyPanel.add(lobbyLabel, BorderLayout.NORTH);
-
         playerListModel = new DefaultListModel<>();
         playerList = new JList<>(playerListModel);
         playerList.setBackground(Color.gray);
         playerList.setForeground(Color.white);
         playerList.setFont(new Font("Arial", Font.PLAIN, 16));
         playerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
         JScrollPane scrollPane = new JScrollPane(playerList);
         lobbyPanel.add(scrollPane, BorderLayout.CENTER);
-
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(Color.darkGray);
-
         challengeButton = new JButton("Sfida");
         challengeButton.setFont(new Font("Arial", Font.BOLD, 16));
         challengeButton.addActionListener(e -> challengeSelectedPlayer());
-
         refreshButton = new JButton("Aggiorna");
         refreshButton.setFont(new Font("Arial", Font.BOLD, 16));
         refreshButton.addActionListener(e -> requestPlayerList());
-
         buttonPanel.add(challengeButton);
         buttonPanel.add(refreshButton);
         lobbyPanel.add(buttonPanel, BorderLayout.SOUTH);

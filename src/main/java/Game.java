@@ -46,7 +46,7 @@ public class Game implements Runnable {
             gameOver = true;
             player1.sendMessage("GAME_OVER " + winner);
             player2.sendMessage("GAME_OVER " + winner);
-            TicTacToeServer.partiteAttive.remove(gameId);
+            TicTacToeServer.activeGames.remove(gameId);
             return;
         }
 
@@ -54,7 +54,7 @@ public class Game implements Runnable {
             gameOver = true;
             player1.sendMessage("GAME_OVER TIE");
             player2.sendMessage("GAME_OVER TIE");
-            TicTacToeServer.partiteAttive.remove(gameId);
+            TicTacToeServer.activeGames.remove(gameId);
             return;
         }
 

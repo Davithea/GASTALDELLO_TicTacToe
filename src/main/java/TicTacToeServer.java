@@ -5,9 +5,9 @@ import java.util.concurrent.*;
 
 public class TicTacToeServer {
     private static final int PORT = 12345;
-    public static HashMap<String, Player> clientConnessi = new HashMap<>();
-    public static HashMap<String, Game> partiteAttive = new HashMap<>();
-    public static HashMap<String, String> pendingChallenges = new HashMap<>();
+    public static Map<String, Player> connectedClients = new ConcurrentHashMap<>();
+    public static Map<String, Game> activeGames = new ConcurrentHashMap<>();
+    public static Map<String, String> pendingChallenges = new ConcurrentHashMap<>();
 
     public static void main(String[] args) {
         System.out.println("Tic-Tac-Toe Server avviato sulla porta " + PORT);

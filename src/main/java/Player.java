@@ -28,13 +28,13 @@ public class Player implements Runnable {
             if (nicknameInput != null && nicknameInput.startsWith("NICKNAME ")) {
                 nickname = nicknameInput.substring(9).trim();
 
-                if (nickname.isEmpty() || TicTacToeServer.clientConnessi.containsKey(nickname)) {
+                if (nickname.isEmpty() || TicTacToeServer.connectedClients.containsKey(nickname)) {
                     out.println("NICKNAME_ERROR");
                     socket.close();
                     return;
                 }
 
-                TicTacToeServer.clientConnessi.put(nickname, this);
+                TicTacToeServer.connectedClients.put(nickname, this);
                 out.println("NICKNAME_SUCCESS " + nickname);
                 System.out.println("Utente registrato: " + nickname);
 
@@ -93,7 +93,7 @@ public class Player implements Runnable {
 
     private void sendPlayerList() {
         StringBuilder playerList = new StringBuilder("LIST_PLAYERS");
-        for (String player : TicTacToeServer.clientConnessi.keySet()) {
+        for (String player : TicTacToeServer.connectedClients.keySet()) {
             if (!player.equals(nickname)) {
                 playerList.append(" ").append(player);
             }
@@ -102,20 +102,20 @@ public class Player implements Runnable {
     }
 
     private void broadcastPlayerList() {
-        for (Player client : TicTacToeServer.clientConnessi.values()) {
+        for (Player client : TicTacToeServer.connectedClients.values()) {
             client.sendPlayerList();
         }
     }
 
     private void sendChallenge(String opponent) {
-        Player opponentHandler = TicTacToeServer.clientConnessi.get(opponent);
+        Player opponentHandler = TicTacToeServer.connectedClients.get(opponent);
         if (opponentHandler == null) {
             out.println("CHALLENGE_ERROR Giocatore non disponibile");
             return;
         }
 
         String gameId = nickname + "-" + opponent;
-        if (TicTacToeServer.partiteAttive.containsKey(gameId) || TicTacToeServer.partiteAttive.containsKey(opponent + "-" + nickname)) {
+        if (TicTacToeServer.activeGames.containsKey(gameId) || TicTacToeServer.activeGames.containsKey(opponent + "-" + nickname)) {
             out.println("CHALLENGE_ERROR Partita già in corso");
             return;
         }
@@ -134,8 +134,7 @@ public class Player implements Runnable {
         }
 
         TicTacToeServer.pendingChallenges.remove(nickname);
-        Player challengerHandler;
-        challengerHandler = TicTacToeServer.clientConnessi.get(challenger);
+        Player challengerHandler = TicTacToeServer.connectedClients.get(challenger);
 
         if (challengerHandler == null) {
             out.println("CHALLENGE_ERROR Sfidante non disponibile");
@@ -145,7 +144,7 @@ public class Player implements Runnable {
         // Crea la partita
         String gameId = challenger + "-" + nickname;
         Game game = new Game(challengerHandler, this, gameId);
-        TicTacToeServer.partiteAttive.put(gameId, game);
+        TicTacToeServer.activeGames.put(gameId, game);
 
         challengerHandler.out.println("CHALLENGE_ACCEPTED " + nickname);
         out.println("CHALLENGE_ACCEPTED " + challenger);
@@ -159,8 +158,7 @@ public class Player implements Runnable {
         String pendingChallenger = TicTacToeServer.pendingChallenges.get(nickname);
         if (pendingChallenger != null && pendingChallenger.equals(challenger)) {
             TicTacToeServer.pendingChallenges.remove(nickname);
-            Player challengerHandler;
-            challengerHandler = TicTacToeServer.clientConnessi.get(challenger);
+            Player challengerHandler = TicTacToeServer.connectedClients.get(challenger);
             if (challengerHandler != null) {
                 challengerHandler.out.println("CHALLENGE_REJECTED " + nickname);
             }
@@ -170,13 +168,12 @@ public class Player implements Runnable {
 
     private void handleMove(String position) {
         // Trova la partita in cui è coinvolto questo giocatore
-        for (Map.Entry<String, Game> entry : TicTacToeServer.partiteAttive.entrySet()) {
+        for (Map.Entry<String, Game> entry : TicTacToeServer.activeGames.entrySet()) {
             Game game = entry.getValue();
-            if (!game.hasPlayer(this)) {
-                continue;
+            if (game.hasPlayer(this)) {
+                game.handleMove(this, position);
+                break;
             }
-            game.handleMove(this, position);
-            break;
         }
     }
 
@@ -190,11 +187,11 @@ public class Player implements Runnable {
 
     private void cleanup() {
         if (nickname != null) {
-            TicTacToeServer.clientConnessi.remove(nickname);
+            TicTacToeServer.connectedClients.remove(nickname);
             TicTacToeServer.pendingChallenges.remove(nickname);
 
             // Rimuovi dalle partite attive
-            TicTacToeServer.partiteAttive.entrySet().removeIf(entry -> {
+            TicTacToeServer.activeGames.entrySet().removeIf(entry -> {
                 if (entry.getValue().hasPlayer(this)) {
                     entry.getValue().playerDisconnected(this);
                     return true;
