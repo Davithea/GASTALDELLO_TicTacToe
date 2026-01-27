@@ -93,7 +93,7 @@ public class Player implements Runnable {
         }
     }
 
-    //todo Metodo che invia la lista dei giocatori al client
+    //Metodo che invia la lista dei giocatori al client
     private void sendPlayerList() { 
         String[] players = TicTacToeServer.connectedClients.keySet().stream() //Ottiene l'insieme delle chiavi (nickname) dei client connessi
                 .filter(p -> !p.equals(nickname)) //Filtra i giocatori escludendo il giocatore corrente
