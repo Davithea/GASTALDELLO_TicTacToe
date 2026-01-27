@@ -57,7 +57,11 @@ public class WebcamStreamServer {
             VideoClient client = videoClients.get(recipient);
             if (client != null) {
                 client.sendFrame(frameData);
+            } else {
+                System.out.println("Client destinatario non trovato: " + recipient);
             }
+        } else {
+            System.out.println("Nessun avversario registrato per: " + sender);
         }
     }
 }
@@ -70,6 +74,7 @@ class VideoClient implements Runnable {
     private DataOutputStream out;
     private DataInputStream in;
     private String nickname;
+    private String opponent;
     private volatile boolean running = true;
 
     public VideoClient(Socket socket) {
@@ -88,8 +93,17 @@ class VideoClient implements Runnable {
             in.readFully(nicknameBytes);
             nickname = new String(nicknameBytes, "UTF-8");
 
+            // Leggi anche il nickname dell'avversario
+            int opponentLength = in.readInt();
+            byte[] opponentBytes = new byte[opponentLength];
+            in.readFully(opponentBytes);
+            opponent = new String(opponentBytes, "UTF-8");
+
             WebcamStreamServer.videoClients.put(nickname, this);
-            System.out.println("Client video registrato: " + nickname);
+            System.out.println("Client video registrato: " + nickname + " (avversario: " + opponent + ")");
+
+            // Registra la coppia
+            WebcamStreamServer.registerPair(nickname, opponent);
 
             // Invia conferma di registrazione
             out.writeInt(1); // OK

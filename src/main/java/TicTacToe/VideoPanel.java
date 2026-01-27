@@ -106,6 +106,7 @@ public class VideoPanel extends JPanel {
 
         try {
             // Connetti al server video
+            System.out.println("Connessione al server video: " + serverAddress + ":12347");
             videoSocket = new Socket(serverAddress, 12347);
             videoOut = new DataOutputStream(new BufferedOutputStream(videoSocket.getOutputStream()));
             videoIn = new DataInputStream(new BufferedInputStream(videoSocket.getInputStream()));
@@ -114,13 +115,21 @@ public class VideoPanel extends JPanel {
             byte[] nicknameBytes = myNickname.getBytes("UTF-8");
             videoOut.writeInt(nicknameBytes.length);
             videoOut.write(nicknameBytes);
+
+            // IMPORTANTE: Invia anche il nickname dell'avversario
+            byte[] opponentBytes = opponentNickname.getBytes("UTF-8");
+            videoOut.writeInt(opponentBytes.length);
+            videoOut.write(opponentBytes);
+
             videoOut.flush();
+            System.out.println("Inviata registrazione: " + myNickname + " -> " + opponentNickname);
 
             // Attendi conferma
             int response = videoIn.readInt();
             if (response != 1) {
                 throw new IOException("Registrazione video fallita");
             }
+            System.out.println("Registrazione video confermata");
 
             // Inizializza la webcam
             webcam = Webcam.getDefault();
@@ -160,6 +169,12 @@ public class VideoPanel extends JPanel {
             receiveExecutor.submit(this::receiveLoop);
 
             System.out.println("Streaming video avviato");
+
+            // Aggiorna label remoto
+            SwingUtilities.invokeLater(() -> {
+                remoteStatusLabel.setText(opponentNickname);
+            });
+
             return true;
 
         } catch (Exception e) {
@@ -179,6 +194,7 @@ public class VideoPanel extends JPanel {
      */
     private void streamLoop() {
         long frameDelay = 1000 / FPS; // Millisecondi tra frame
+        System.out.println("Stream loop avviato - FPS: " + FPS);
 
         while (streaming && webcam != null && webcam.isOpen()) {
             try {
@@ -186,7 +202,10 @@ public class VideoPanel extends JPanel {
 
                 // Cattura frame dalla webcam
                 BufferedImage image = webcam.getImage();
-                if (image == null) continue;
+                if (image == null) {
+                    Thread.sleep(100);
+                    continue;
+                }
 
                 // Ridimensiona per ridurre banda
                 BufferedImage scaled = scaleImage(image, TARGET_WIDTH, TARGET_HEIGHT);
@@ -211,6 +230,7 @@ public class VideoPanel extends JPanel {
                 }
 
             } catch (InterruptedException e) {
+                System.out.println("Stream loop interrotto");
                 break;
             } catch (IOException e) {
                 System.err.println("Errore streaming: " + e.getMessage());
@@ -225,6 +245,8 @@ public class VideoPanel extends JPanel {
      * Loop per la ricezione dei frame remoti
      */
     private void receiveLoop() {
+        System.out.println("Receive loop avviato - In attesa di frame da " + opponentNickname);
+
         while (streaming) {
             try {
                 // Leggi dimensione frame
@@ -285,6 +307,7 @@ public class VideoPanel extends JPanel {
      * Ferma lo streaming
      */
     public void stopStreaming() {
+        System.out.println("Richiesta di stop streaming");
         streaming = false;
 
         // Chiudi webcam
@@ -321,6 +344,7 @@ public class VideoPanel extends JPanel {
             localStatusLabel.setText("Video Fermato");
             remoteVideoLabel.setIcon(null);
             remoteVideoLabel.setText("In attesa...");
+            remoteStatusLabel.setText("Avversario");
             localVideoPanel.revalidate();
             localVideoPanel.repaint();
         });
