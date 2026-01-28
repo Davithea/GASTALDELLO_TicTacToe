@@ -41,8 +41,7 @@ public class VideoPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.DARK_GRAY);
         setupUI();
-        streamExecutor = Executors.newSingleThreadExecutor();
-        receiveExecutor = Executors.newSingleThreadExecutor();
+        // Non creare gli executor qui - verranno creati in startStreaming()
     }
 
     private void setupUI() {
@@ -97,6 +96,15 @@ public class VideoPanel extends JPanel {
         this.opponentNickname = opponentNickname;
 
         try {
+            // IMPORTANTE: Crea nuovi executor ogni volta che si avvia lo streaming
+            // Questo risolve il problema del RejectedExecutionException quando si riavvia
+            if (streamExecutor == null || streamExecutor.isShutdown()) {
+                streamExecutor = Executors.newSingleThreadExecutor();
+            }
+            if (receiveExecutor == null || receiveExecutor.isShutdown()) {
+                receiveExecutor = Executors.newSingleThreadExecutor();
+            }
+
             // Connetti al server video
             System.out.println("Connessione al server video: " + serverAddress + ":12347");
             videoSocket = new Socket(serverAddress, 12347);
@@ -307,11 +315,11 @@ public class VideoPanel extends JPanel {
             e.printStackTrace();
         }
 
-        // Shutdown executor
-        if (streamExecutor != null) {
+        // Shutdown executor (verranno ricreati al prossimo start)
+        if (streamExecutor != null && !streamExecutor.isShutdown()) {
             streamExecutor.shutdownNow();
         }
-        if (receiveExecutor != null) {
+        if (receiveExecutor != null && !receiveExecutor.isShutdown()) {
             receiveExecutor.shutdownNow();
         }
 
