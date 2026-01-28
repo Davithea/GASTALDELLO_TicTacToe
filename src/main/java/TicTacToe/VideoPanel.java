@@ -3,7 +3,6 @@ package TicTacToe;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -13,10 +12,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.*;
 
-/**
- * Pannello per gestire la visualizzazione e lo streaming della webcam
- * Usa la libreria webcam-capture di Sarxos
- */
 public class VideoPanel extends JPanel {
     private JPanel localVideoPanel; // Pannello per video locale
     private JPanel remoteVideoPanel; // Pannello per video remoto
@@ -50,9 +45,6 @@ public class VideoPanel extends JPanel {
         receiveExecutor = Executors.newSingleThreadExecutor();
     }
 
-    /**
-     * Configura l'interfaccia utente
-     */
     private void setupUI() {
         JPanel videoContainer = new JPanel(new GridLayout(1, 2, 10, 0));
         videoContainer.setBackground(Color.DARK_GRAY);
@@ -189,9 +181,6 @@ public class VideoPanel extends JPanel {
         }
     }
 
-    /**
-     * Loop principale per lo streaming dei frame
-     */
     private void streamLoop() {
         long frameDelay = 1000 / FPS; // Millisecondi tra frame
         System.out.println("Stream loop avviato - FPS: " + FPS);
@@ -241,9 +230,6 @@ public class VideoPanel extends JPanel {
         System.out.println("Stream loop terminato");
     }
 
-    /**
-     * Loop per la ricezione dei frame remoti
-     */
     private void receiveLoop() {
         System.out.println("Receive loop avviato - In attesa di frame da " + opponentNickname);
 
@@ -291,9 +277,6 @@ public class VideoPanel extends JPanel {
         System.out.println("Receive loop terminato");
     }
 
-    /**
-     * Ridimensiona un'immagine
-     */
     private BufferedImage scaleImage(BufferedImage original, int width, int height) {
         BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = scaled.createGraphics();
@@ -303,9 +286,6 @@ public class VideoPanel extends JPanel {
         return scaled;
     }
 
-    /**
-     * Ferma lo streaming
-     */
     public void stopStreaming() {
         System.out.println("Richiesta di stop streaming");
         streaming = false;
@@ -352,9 +332,6 @@ public class VideoPanel extends JPanel {
         System.out.println("Streaming video fermato");
     }
 
-    /**
-     * Verifica se lo streaming è attivo
-     */
     public boolean isStreaming() {
         return streaming;
     }
