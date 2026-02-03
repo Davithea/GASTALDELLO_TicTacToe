@@ -7,15 +7,15 @@ import java.util.concurrent.*;
 
 public class TicTacToeServer {
     // Porte per i diversi servizi
-    private static final int GAME_PORT = 12345;  // Porta per il gioco
-    private static final int VIDEO_PORT = 12347; // Porta per lo streaming video
+    private static final int GAME_PORT = 12345;  //Porta per la gestione del gioco
+    private static final int VIDEO_PORT = 12347; //Porta per lo streaming video
 
-    // Mappe condivise per la gestione dei client e delle partite
-    public static Map<String, Player> connectedClients = new ConcurrentHashMap<>();
-    public static Map<String, Game> activeGames = new ConcurrentHashMap<>();
-    public static Map<String, String> pendingChallenges = new ConcurrentHashMap<>();
+    //Mappe condivise per la gestione dei client e delle partite
+    public static Map<String, Player> connectedClients = new ConcurrentHashMap<>(); //Mappa per il salvataggio dei client
+    public static Map<String, Game> activeGames = new ConcurrentHashMap<>();    //Mappa per il salvataggio delle partite in corso
+    public static Map<String, String> pendingChallenges = new ConcurrentHashMap<>();    //Mappa per le challenges
 
-    // Mappe per la gestione dello streaming video
+    //Mappe per la gestione dello streaming video
     public static Map<String, VideoClient> videoClients = new ConcurrentHashMap<>();
     public static Map<String, String> activePairs = new ConcurrentHashMap<>(); // nickname -> opponent
 
@@ -26,18 +26,18 @@ public class TicTacToeServer {
         System.out.println("Porta Video: " + VIDEO_PORT);
         System.out.println("=================================================");
 
-        // Avvia il server di gioco in un thread separato
+        //Avvia il server di gioco in un thread separato
         Thread gameServerThread = new Thread(() -> startGameServer());
         gameServerThread.setName("GameServerThread");
         gameServerThread.start();
 
-        // Avvia il server video in un thread separato
+        //Avvia il server video in un thread separato
         Thread videoServerThread = new Thread(() -> startVideoServer());
         videoServerThread.setName("VideoServerThread");
         videoServerThread.start();
     }
 
-    // Server per la gestione del gioco
+    //Server per la gestione del gioco
     private static void startGameServer() {
         System.out.println("Game Server in ascolto sulla porta " + GAME_PORT);
         try (ServerSocket serverSocket = new ServerSocket(GAME_PORT)) {
@@ -52,7 +52,7 @@ public class TicTacToeServer {
         }
     }
 
-    // Server per lo streaming video
+    //Server per lo streaming video
     private static void startVideoServer() {
         System.out.println("Video Server in ascolto sulla porta " + VIDEO_PORT);
         try (ServerSocket serverSocket = new ServerSocket(VIDEO_PORT)) {
@@ -67,7 +67,7 @@ public class TicTacToeServer {
         }
     }
 
-    // Metodi per la gestione delle coppie video
+    //Metodi per la gestione delle coppie video
     public static void registerPair(String player1, String player2) {
         activePairs.put(player1, player2);
         activePairs.put(player2, player1);
