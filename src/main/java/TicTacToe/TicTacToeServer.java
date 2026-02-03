@@ -21,18 +21,18 @@ public class TicTacToeServer {
 
     public static void main(String[] args) {
         System.out.println("=================================================");
-        System.out.println("Tic-Tac-Toe Unified Server Avviato");
+        System.out.println("Tic-Tac-Toe Server Avviato");
         System.out.println("Porta Game: " + GAME_PORT);
         System.out.println("Porta Video: " + VIDEO_PORT);
         System.out.println("=================================================");
 
         // Avvia il server di gioco in un thread separato
-        Thread gameServerThread = new Thread(() -> startGameServer());
+        Thread gameServerThread = new Thread(TicTacToeServer::startGameServer);
         gameServerThread.setName("GameServerThread");
         gameServerThread.start();
 
         // Avvia il server video in un thread separato
-        Thread videoServerThread = new Thread(() -> startVideoServer());
+        Thread videoServerThread = new Thread(TicTacToeServer::startVideoServer);
         videoServerThread.setName("VideoServerThread");
         videoServerThread.start();
     }
