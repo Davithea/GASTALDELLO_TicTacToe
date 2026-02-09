@@ -3,9 +3,7 @@ package TicTacToe;
 import java.io.Serializable;
 
 //Classe generica che implementa Serializable per poter essere inviata in rete
-public class GameMessage<T> implements Serializable { 
-    //private static final long serialVersionUID = 1L; //Versione di serializzazione per garantire compatibilità
-
+public class GameMessage<T> implements Serializable {
     private final String type; //Tipo di messaggio (es: NICKNAME_SUCCESS, SET_NICKNAME, BOARD, ...)
     private final T payload; //Dato generico associato al messaggio
 
