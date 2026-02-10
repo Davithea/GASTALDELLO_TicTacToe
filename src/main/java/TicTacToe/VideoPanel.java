@@ -21,7 +21,7 @@ public class VideoPanel extends JPanel {
     private JLabel remoteStatusLabel; //Stato video remoto
 
     private Webcam webcam; //Webcam
-    private volatile boolean streaming = false; //Flag streaming attivo
+    private volatile boolean streaming = false; //Flag streaming attivo (volatile: modificatore di campo per garantire che variabile sia letta e scritta nella RAM)
     private Socket videoSocket; //Socket verso server video
     private DataOutputStream videoOut; //Stream output video
     private DataInputStream videoIn; //Stream input video
