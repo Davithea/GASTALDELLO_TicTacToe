@@ -110,6 +110,74 @@ Client con GUI Swing per l'interfaccia utente.
 
 ---
 
+## 📹 Trasmissione Video (Webcam)
+
+Lo streaming webcam è gestito **su un server dedicato** e **su una porta separata** rispetto al gioco (video su **12347**, gioco su **12345**). I frame vengono compressi e inoltrati in tempo reale tra i due avversari.
+
+### **Componenti Video**
+
+#### 1. **WebcamStreamServer.java**
+Server dedicato allo streaming video.
+
+**Compiti:**
+- Ascolta su porta **12347**
+- Accetta connessioni dei client video
+- Mantiene le mappe `videoClients` e `activePairs`
+- Inoltra i frame dal mittente al destinatario
+
+---
+
+#### 2. **VideoClient.java**
+Gestisce la connessione video lato server (un thread per client video).
+
+**Compiti:**
+- Riceve nickname e nickname avversario
+- Registra la coppia (player ↔ opponent)
+- Riceve frame compressi e li inoltra all'avversario
+- Gestisce chiusura e cleanup (rimozione mappe)
+
+---
+
+#### 3. **VideoPanel.java**
+Pannello Swing che gestisce cattura webcam, invio e ricezione video.
+
+**Dettagli tecnici:**
+- Webcam locale con libreria `webcam-capture`
+- Risoluzione target **320x240**
+- **15 FPS** con controllo del frame rate
+- Compressione JPEG (qualita' ~0.7)
+- Due thread separati: uno per invio, uno per ricezione
+
+---
+
+#### 4. **TicTacToeClientWithWebcam.java**
+Versione del client che integra la video chat nella GUI.
+
+**Flusso video:**
+1. Durante `GAME_START` il client propone l'attivazione video
+2. Se accettata, apre una connessione al server video
+3. Invia al server video: nickname + nickname avversario
+4. Avvia:
+   - **streamLoop**: cattura, scala, comprime e invia i frame
+   - **receiveLoop**: riceve frame, decodifica e aggiorna GUI
+
+---
+
+### 🔄 Flusso di Streaming
+
+```
+1. Client A e Client B avviano il video
+2. Entrambi si connettono al server video (porta 12347)
+3. Ogni client invia: [lunghezza nickname][nickname][lunghezza avversario][avversario]
+4. Il server registra la coppia e risponde OK
+5. Ogni frame viene inviato come:
+   [dimensione frame][byte frame JPEG]
+6. Il server inoltra il frame all'altro client
+7. Il client ricevente decodifica il JPEG e aggiorna il pannello remoto
+```
+
+---
+
 ## 🔄 Flusso dell'Applicazione
 
 ### **Fase 1: Avvio e Connessione**
